@@ -12,7 +12,15 @@ It's safe to run multiple instance of this for horizontal scaling.
 
 ## Setup
 
-npm install
+### Dependencies
+
+`npm install`
+
+### MongoDB Indexes
+
+Make sure to create the necessary indexes in the DB by running the `indexes.js` file using the Mongo Shell:
+
+`mongo <MONGO_URL> indexes.js`
 
 ## Running
 
