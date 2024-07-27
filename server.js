@@ -31,24 +31,21 @@ http.createServer(app).listen(port);
 //connect to mongo
 var DBS = {};
 
-MongoCluster.initFromEnv(async function (err, cluster) {
+MongoCluster.initFromEnv(function (err, cluster) {
   console.log("DONE");
   if (err) {
     console.error("Error connecting to the Mongo Metrics Cluster");
     throw err;
   } else {
     DBS.metricsCluster = cluster;
-    try {
-      const client = await mongodb.MongoClient.connect(process.env.MONGO_URL, {
+    mongodb.MongoClient.connect(
+      process.env.MONGO_URL,
+      {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-      });
-      console.error("Db Connected");
-      const db = client.db(); // Get the default database
-      afterMongoURLConnected(null, db);
-    } catch (err) {
-      afterMongoURLConnected(err, null);
-    }
+      },
+      afterMongoURLConnected
+    );
   }
 });
 
