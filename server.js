@@ -43,6 +43,7 @@ MongoCluster.initFromEnv(async function (err, cluster) {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       });
+      console.error("Db Connected");
       const db = client.db(); // Get the default database
       afterMongoURLConnected(null, db);
     } catch (err) {
