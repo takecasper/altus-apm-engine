@@ -24,12 +24,9 @@ app.use(require("connect-ntp")());
 app.use(require("./lib/middlewares/simplentp")());
 app.use(require("./lib/middlewares/cors-options"));
 
-var port = process.env.PORT || 11011;
-console.info("starting apm-engine on port", port);
-http.createServer(app).listen(port);
-
 //connect to mongo
 var DBS = {};
+console.log("Connecting to the Mongo Metrics Cluster");
 
 MongoCluster.initFromEnv(function (err, cluster) {
   console.log("DONE");
@@ -46,6 +43,10 @@ MongoCluster.initFromEnv(function (err, cluster) {
       .catch((err) => afterMongoURLConnected(err, null));
   }
 });
+
+var port = process.env.PORT || 11011;
+console.info("starting apm-engine on port", port);
+http.createServer(app).listen(port);
 
 function afterMongoURLConnected(err, db) {
   console.log("Connected to mongo");
