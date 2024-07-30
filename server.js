@@ -31,22 +31,6 @@ http.createServer(app).listen(port);
 //connect to mongo
 var DBS = {};
 
-MongoCluster.initFromEnvAsync()
-  .then(function (cluster) {
-    console.log("DONE");
-    DBS.metricsCluster = cluster;
-    return mongodb.MongoClient.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }).then((db) => {
-      afterMongoURLConnected(null, db);
-    });
-  })
-  .catch(function (err) {
-    console.error("Error connecting to the Mongo Metrics Cluster");
-    throw err;
-  });
-/*
 MongoCluster.initFromEnv(function (err, cluster) {
   console.log("DONE");
   if (err) {
@@ -54,17 +38,15 @@ MongoCluster.initFromEnv(function (err, cluster) {
     throw err;
   } else {
     DBS.metricsCluster = cluster;
-    mongodb.MongoClient.connect(
-      process.env.MONGO_URL,
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      },
-      afterMongoURLConnected
-    );
+    mongodb.MongoClient.connect(process.env.MONGO_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+      .then((db) => afterMongoURLConnected(null, db))
+      .catch((err) => afterMongoURLConnected(err, null));
   }
 });
-*/
+
 function afterMongoURLConnected(err, db) {
   console.log("Connected to mongo");
   if (err) {
