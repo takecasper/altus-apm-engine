@@ -1,7 +1,7 @@
 var connect = require("connect");
 var http = require("http");
-var mongodb = require("mongodb");
-var MongoCluster = require("mongo-sharded-cluster");
+var { MongoClient } = require("mongodb");
+//var MongoCluster = require("mongo-sharded-cluster");
 
 var app = connect();
 
@@ -20,7 +20,7 @@ if (process.env.FORWARD_URL) {
 app.use(require("connect-ntp")());
 
 // new ntp middleware, simple sends the timestamp to the client
-// this works well with firewalls, this is plain old HTTP
+// this works well with firewalls, this is #plain old HTTP
 app.use(require("./lib/middlewares/simplentp")());
 app.use(require("./lib/middlewares/cors-options"));
 
@@ -28,6 +28,20 @@ app.use(require("./lib/middlewares/cors-options"));
 var DBS = {};
 console.log("Connecting to the Mongo Metrics Cluster");
 
+const client = new MongoClient(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+client
+  .connect()
+  .then((client) => {
+    const db = client.db();
+    afterMongoURLConnected(null, db);
+  })
+  .catch((err) => afterMongoURLConnected(err, null));
+
+/*
 MongoCluster.initFromEnv(function (err, cluster) {
   console.log("DONE");
   if (err) {
@@ -43,6 +57,7 @@ MongoCluster.initFromEnv(function (err, cluster) {
       .catch((err) => afterMongoURLConnected(err, null));
   }
 });
+*/
 
 var port = process.env.PORT || 11011;
 console.info("starting apm-engine on port", port);
@@ -78,7 +93,7 @@ function afterMongoURLConnected(err, db) {
     // it should be used before using the authentication middleware
     var stateManager = require("./lib/stateManager");
     var errorManager = require("./lib/middlewares/error-manager");
-    app.use("/errors", errorManager(DBS.app, DBS.metricsCluster));
+    app.use("/errors", errorManager(DBS.app));
 
     // authenticare middleware
     // ping middleware must be used after the authentication middleware
@@ -86,7 +101,7 @@ function afterMongoURLConnected(err, db) {
     app.use(require("./lib/middlewares/ping")());
     app.use(require("./lib/middlewares/logger")());
     app.use("/jobs", require("./lib/middlewares/jobs")(DBS.app));
-    require("./lib/controller")(app, DBS.app, DBS.metricsCluster);
+    require("./lib/controller")(app, DBS.app);
 
     // error middleware
     app.use(require("./lib/middlewares/onerror")());
